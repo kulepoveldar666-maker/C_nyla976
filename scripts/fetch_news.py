@@ -4,7 +4,6 @@ import time
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
-from deep_translator import GoogleTranslator
 
 RSS_URL = "https://www.ithome.com/rss/"
 
@@ -13,6 +12,19 @@ KEYWORDS = {
     "apple": ["苹果", "iPhone", "iPad", "Mac", "Apple", "iOS", "macOS", "AirPods"],
     "windows": ["Windows", "微软", "Microsoft", "Win11", "Win10", "Surface"],
 }
+
+def translate_text(text):
+    if not text:
+        return text
+    try:
+        url = "https://api.mymemory.translated.net/get"
+        params = {"q": text, "langpair": "zh-CN|ru"}
+        response = requests.get(url, params=params, timeout=10)
+        data = response.json()
+        return data['responseData']['translatedText']
+    except Exception as e:
+        print(f"Ошибка перевода: {e}")
+        return text
 
 def fetch_rss():
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
@@ -100,7 +112,6 @@ def main():
     
     print("=== Начинаем сбор всех постов ===")
     items = fetch_rss()
-    translator = GoogleTranslator(source='zh-CN', target='ru')
 
     for category, count in tasks:
         print(f"--- Ищем {count} новости для: {category.upper()} ---")
@@ -113,20 +124,11 @@ def main():
         for it in selected:
             print(f"Отправляем: {it['title']}")
             
-
-            try:
-                time.sleep(2)
-                title_ru = translator.translate(it['title'])
-                time.sleep(2)
-                desc_ru = translator.translate(it['description'])
-            except Exception as e:
-                print(f"Ошибка перевода: {e}. Отправляем оригинал.")
-                title_ru = it['title']
-                desc_ru = it['description']
+            title_ru = translate_text(it['title'])
+            desc_ru = translate_text(it['description'])
             
             send_to_telegram(category, it, title_ru, desc_ru)
-            time.sleep(5) 
+            time.sleep(2)
+
 if __name__ == "__main__":
     main()
-
-    
