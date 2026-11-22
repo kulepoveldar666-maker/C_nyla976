@@ -51,24 +51,13 @@ def filter_news(items, category, limit=1):
             break
     return matched
 
-def send_to_telegram(category, it):
+def send_to_telegram(category, it, title_ru, desc_ru):
     token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
     chat_id = ("8064044934") 
     
     if not token or not chat_id:
         print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
         return
-
-    try:
-    time.sleep(2) 
-    translator = GoogleTranslator(source='zh-CN', target='ru')
-    title_ru = translator.translate(it['title'])
-    time.sleep(1)
-    desc_ru = translator.translate(it['description'])
-except Exception as e:
-        print(f"Ошибка перевода: {e}. Отправляем оригинал.")
-        title_ru = it['title']
-        desc_ru = it['description']
 
     emoji_map = {"android": "🤖", "apple": "🍎", "windows": "🪟"}
     cat_emoji = emoji_map.get(category, "📱")
@@ -111,7 +100,8 @@ def main():
     
     print("=== Начинаем сбор всех постов ===")
     items = fetch_rss()
-    
+    translator = GoogleTranslator(source='zh-CN', target='ru')
+
     for category, count in tasks:
         print(f"--- Ищем {count} новости для: {category.upper()} ---")
         selected = filter_news(items, category, count)
@@ -122,8 +112,21 @@ def main():
             
         for it in selected:
             print(f"Отправляем: {it['title']}")
-            send_to_telegram(category, it)
-            time.sleep(2)
+            
 
+            try:
+                time.sleep(2)
+                title_ru = translator.translate(it['title'])
+                time.sleep(2)
+                desc_ru = translator.translate(it['description'])
+            except Exception as e:
+                print(f"Ошибка перевода: {e}. Отправляем оригинал.")
+                title_ru = it['title']
+                desc_ru = it['description']
+            
+            send_to_telegram(category, it, title_ru, desc_ru)
+            time.sleep(5) 
 if __name__ == "__main__":
     main()
+
+    
