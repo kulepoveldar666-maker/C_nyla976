@@ -52,8 +52,8 @@ def filter_news(items, category, limit=1):
     return matched
 
 def send_to_telegram(category, it):
-    token = os.environ.get("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
-    chat_id = os.environ.get("8064044934") 
+    token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
+    chat_id = ("8064044934") 
     
     if not token or not chat_id:
         print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
