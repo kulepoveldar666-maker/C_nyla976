@@ -3,6 +3,7 @@ import re
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from deep_translator import GoogleTranslator
 
 RSS_URL = "https://www.ithome.com/rss/"
 
@@ -50,18 +51,31 @@ def filter_news(items, category, limit=1):
     return matched
 
 def send_to_telegram(category, it):
-    token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg")
-    chat_id = ("8064044934")
+    
+    token = os.environ.get("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg")  # или строка "твой_токен"
+    chat_id = os.environ.get("8064044934") # или строка "твой_id"
     
     if not token or not chat_id:
         print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
         return
 
+    try:
+        translator = GoogleTranslator(source='zh-CN', target='ru')
+        title_ru = translator.translate(it['title'])
+        desc_ru = translator.translate(it['description'])
+    except Exception as e:
+        print(f"Ошибка перевода: {e}. Отправляем оригинал.")
+        title_ru = it['title']
+        desc_ru = it['description']
+        
+    emoji_map = {"android": "🤖", "apple": "🍎", "windows": "🪟"}
+    cat_emoji = emoji_map.get(category, "📱")
+
     text = (
-        f"📱 **Категория:** {category.upper()}\n\n"
-        f"📰 **{it['title']}**\n\n"
-        f"📝 {it['description']}...\n\n"
-        f"🔗 [Источник]({it['link']})"
+        f"{cat_emoji} **{category.upper()}**\n\n"
+        f"🔥 **{title_ru}**\n\n"
+        f"📝 {desc_ru}...\n\n"
+        f"🔗 [Читать полностью]({it['link']})"
     )
     
     if it['image'] and "http" in it['image']:
@@ -87,8 +101,22 @@ def send_to_telegram(category, it):
         print(f"Ошибка отправки: {response.text}")
 
 def main():
-    # Временно убрана проверка времени для теста
-    category, limit = "android", 1
+    now_utc = datetime.now(timezone.utc)
+    hour = now_utc.hour
+    
+    if hour == 5:
+        category, limit = "android", 1
+    elif hour == 8:
+        category, limit = "apple", 1
+    elif hour == 11:
+        category, limit = "windows", 1
+    elif hour == 14:
+        category, limit = "android", 1
+    elif hour == 16:
+        category, limit = "apple", 1
+    else:
+        print(f"Запуск в {hour} UTC не соответствует расписанию постинга. Ждем следующего.")
+        return
 
     print(f"=== Пост для категории: {category.upper()} ===")
     items = fetch_rss()
