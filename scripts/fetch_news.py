@@ -67,9 +67,11 @@ def send_to_telegram(category, it, title_ru, desc_ru):
     token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
     chat_id = ("8064044934") 
     
-    if not token or not chat_id:
-        print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
-        return
+    def send_to_telegram(category, it, title_ru, desc_ru):
+    # ... (токены) ...
+    
+    # Убираем упоминания источника из текста
+    desc_ru = desc_ru.replace("IT之家", "").replace("IT 之家", "").replace("ithome", "").strip()
 
     emoji_map = {"android": "🤖", "apple": "🍎", "windows": "🪟"}
     cat_emoji = emoji_map.get(category, "📱")
@@ -77,7 +79,7 @@ def send_to_telegram(category, it, title_ru, desc_ru):
     text = (
         f"{cat_emoji} **{category.upper()}**\n\n"
         f"🔥 **{title_ru}**\n\n"
-        f"📝 {desc_ru}...\n\n"
+        f"📝 {desc_ru}..."
     )
     
     if it['image'] and "http" in it['image']:
