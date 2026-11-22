@@ -50,13 +50,8 @@ def filter_news(items, category, limit=1):
     return matched
 
 def main():
-    now_utc = datetime.now(timezone.utc)
-    hour = now_utc.hour
-    
+    # Временно убрана проверка времени для теста
     category, limit = "android", 1
-    
-        print(f"Запуск в {hour} UTC не соответствует расписанию постинга.")
-        return
 
     print(f"=== Пост для категории: {category.upper()} ===")
     items = fetch_rss()
