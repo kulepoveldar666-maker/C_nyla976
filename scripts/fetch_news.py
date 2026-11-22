@@ -64,14 +64,17 @@ def filter_news(items, category, limit=1):
     return matched
 
 def send_to_telegram(category, it, title_ru, desc_ru):
+    # ВСТАВЬ СЮДА СВОЙ ТОКЕН И ID (если еще не вставил)
     token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
     chat_id = ("8064044934") 
     
-    def send_to_telegram(category, it, title_ru, desc_ru):
-    # ... (токены) ...
-    
+    if not token or not chat_id:
+        print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
+        return
+
     # Убираем упоминания источника из текста
-    desc_ru = desc_ru.replace("IT之家", "").replace("IT 之家", "").replace("ithome", "").strip()
+    desc_ru = desc_ru.replace("IT之家", "").replace("IT 之家", "").replace("ithome", "").replace("IT Home", "").strip()
+    title_ru = title_ru.replace("IT之家", "").replace("IT 之家", "").replace("ithome", "").replace("IT Home", "").strip()
 
     emoji_map = {"android": "🤖", "apple": "🍎", "windows": "🪟"}
     cat_emoji = emoji_map.get(category, "📱")
@@ -113,7 +116,7 @@ def main():
     
     print("=== Начинаем сбор всех постов ===")
     items = fetch_rss()
-
+    
     for category, count in tasks:
         print(f"--- Ищем {count} новости для: {category.upper()} ---")
         selected = filter_news(items, category, count)
@@ -129,7 +132,7 @@ def main():
             desc_ru = translate_text(it['description'])
             
             send_to_telegram(category, it, title_ru, desc_ru)
-            time.sleep(2)
+            time.sleep(5)
 
 if __name__ == "__main__":
     main()
