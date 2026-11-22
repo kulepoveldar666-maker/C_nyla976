@@ -49,17 +49,45 @@ def filter_news(items, category, limit=1):
             break
     return matched
 
+def send_to_telegram(category, it):
+    token = os.environ.get("TELEGRAM_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    
+    if not token or not chat_id:
+        print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
+        return
+
+    text = (
+        f"📱 **Категория:** {category.upper()}\n\n"
+        f"📰 **{it['title']}**\n\n"
+        f"📝 {it['description']}...\n\n"
+        f"🔗 [Источник]({it['link']})"
+    )
+    
+    if it['image'] and "http" in it['image']:
+        url = f"https://api.telegram.org/bot{token}/sendPhoto"
+        payload = {
+            "chat_id": chat_id,
+            "photo": it['image'],
+            "caption": text,
+            "parse_mode": "Markdown"
+        }
+    else:
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "Markdown"
+        }
+        
+    response = requests.post(url, json=payload)
+    if response.status_code == 200:
+        print("Пост успешно отправлен в Telegram!")
+    else:
+        print(f"Ошибка отправки: {response.text}")
+
 def main():
-    # Время по UTC (МСК минус 3 часа). 
-    # 08:00 МСК = 05:00 UTC (Android)
-    # 11:00 МСК = 08:00 UTC (Apple)
-    # 14:00 МСК = 11:00 UTC (Windows)
-    # 17:00 МСК = 14:00 UTC (Android)
-    # 19:00 МСК = 16:00 UTC (Apple)
-    
-    now_utc = datetime.now(timezone.utc)
-    hour = now_utc.hour
-    
+    # Временно убрана проверка времени для теста
     category, limit = "android", 1
 
     print(f"=== Пост для категории: {category.upper()} ===")
@@ -71,13 +99,8 @@ def main():
         return
 
     for it in selected:
-        print("-" * 40)
-        print(f"Заголовок: {it['title']}")
-        print(f"Кратко: {it['description']}...")
-        print(f"Ссылка на источник: {it['link']}")
-        print(f"Ссылка на фото (отдельно): {it['image']}")
-        print(f"Дата публикации: {it['pub_date']}")
-        print("-" * 40)
+        print(f"Отправляем: {it['title']}")
+        send_to_telegram(category, it)
 
 if __name__ == "__main__":
     main()
