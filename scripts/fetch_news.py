@@ -60,10 +60,12 @@ def send_to_telegram(category, it):
         return
 
     try:
-        translator = GoogleTranslator(source='zh-CN', target='ru')
-        title_ru = translator.translate(it['title'])
-        desc_ru = translator.translate(it['description'])
-    except Exception as e:
+    time.sleep(2) 
+    translator = GoogleTranslator(source='zh-CN', target='ru')
+    title_ru = translator.translate(it['title'])
+    time.sleep(1)
+    desc_ru = translator.translate(it['description'])
+except Exception as e:
         print(f"Ошибка перевода: {e}. Отправляем оригинал.")
         title_ru = it['title']
         desc_ru = it['description']
