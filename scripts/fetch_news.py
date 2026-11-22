@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -51,9 +52,8 @@ def filter_news(items, category, limit=1):
     return matched
 
 def send_to_telegram(category, it):
-    
-    token = os.environ.get("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg")  # или строка "твой_токен"
-    chat_id = os.environ.get("8064044934") # или строка "твой_id"
+    token = os.environ.get("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
+    chat_id = os.environ.get("8064044934") 
     
     if not token or not chat_id:
         print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
@@ -67,7 +67,7 @@ def send_to_telegram(category, it):
         print(f"Ошибка перевода: {e}. Отправляем оригинал.")
         title_ru = it['title']
         desc_ru = it['description']
-        
+
     emoji_map = {"android": "🤖", "apple": "🍎", "windows": "🪟"}
     cat_emoji = emoji_map.get(category, "📱")
 
@@ -121,6 +121,7 @@ def main():
         for it in selected:
             print(f"Отправляем: {it['title']}")
             send_to_telegram(category, it)
-           time.sleep(2)  
+            time.sleep(2)
+
 if __name__ == "__main__":
     main()
