@@ -101,34 +101,26 @@ def send_to_telegram(category, it):
         print(f"Ошибка отправки: {response.text}")
 
 def main():
-    now_utc = datetime.now(timezone.utc)
-    hour = now_utc.hour
+    tasks = [
+        ("android", 2),
+        ("apple", 2),
+        ("windows", 1)
+    ]
     
-    if hour == 5:
-        category, limit = "android", 1
-    elif hour == 8:
-        category, limit = "apple", 1
-    elif hour == 11:
-        category, limit = "windows", 1
-    elif hour == 14:
-        category, limit = "android", 1
-    elif hour == 16:
-        category, limit = "apple", 1
-    else:
-        print(f"Запуск в {hour} UTC не соответствует расписанию постинга. Ждем следующего.")
-        return
-
-    print(f"=== Пост для категории: {category.upper()} ===")
+    print("=== Начинаем сбор всех постов ===")
     items = fetch_rss()
-    selected = filter_news(items, category, limit)
     
-    if not selected:
-        print(f"Свежих новостей по теме {category} в RSS не найдено.")
-        return
-
-    for it in selected:
-        print(f"Отправляем: {it['title']}")
-        send_to_telegram(category, it)
-
+    for category, count in tasks:
+        print(f"--- Ищем {count} новости для: {category.upper()} ---")
+        selected = filter_news(items, category, count)
+        
+        if not selected:
+            print(f"Свежих новостей по теме {category} не найдено.")
+            continue
+            
+        for it in selected:
+            print(f"Отправляем: {it['title']}")
+            send_to_telegram(category, it)
+           time.sleep(2)  
 if __name__ == "__main__":
     main()
