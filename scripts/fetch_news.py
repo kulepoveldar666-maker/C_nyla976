@@ -78,7 +78,6 @@ def send_to_telegram(category, it, title_ru, desc_ru):
         f"{cat_emoji} **{category.upper()}**\n\n"
         f"🔥 **{title_ru}**\n\n"
         f"📝 {desc_ru}...\n\n"
-        f"🔗 [Читать полностью]({it['link']})"
     )
     
     if it['image'] and "http" in it['image']:
