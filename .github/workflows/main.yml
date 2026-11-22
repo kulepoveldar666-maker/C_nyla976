@@ -23,9 +23,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
         
-      - - name: Run script
-  env:
-    TELEGRAM_TOKEN: ${{ 9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg }}
-    TELEGRAM_CHAT_ID: ${{ 8064044934 }}
-  run: python scripts/fetch_news.py
+      - name: Run script
+        env:
+          TELEGRAM_TOKEN: ${{ 9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg }}
+          TELEGRAM_CHAT_ID: ${{ 8064044934 }}
         run: python scripts/fetch_news.py
