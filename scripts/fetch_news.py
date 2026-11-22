@@ -60,19 +60,7 @@ def main():
     now_utc = datetime.now(timezone.utc)
     hour = now_utc.hour
     
-    if hour == 5:
-        category, limit = "android", 1
-    elif hour == 8:
-        category, limit = "apple", 1
-    elif hour == 11:
-        category, limit = "windows", 1
-    elif hour == 14:
-        category, limit = "android", 1
-    elif hour == 16:
-        category, limit = "apple", 1
-    else:
-        print(f"Запуск в {hour} UTC не соответствует расписанию постинга. Ждем следующего.")
-        return
+    category, limit = "android", 1
 
     print(f"=== Пост для категории: {category.upper()} ===")
     items = fetch_rss()
