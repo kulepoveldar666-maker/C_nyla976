@@ -50,8 +50,29 @@ def filter_news(items, category, limit=1):
     return matched
 
 def main():
-    # Временно убрана проверка времени для теста
-    category, limit = "android", 1
+    # Время по UTC (МСК минус 3 часа). 
+    # 08:00 МСК = 05:00 UTC (Android)
+    # 11:00 МСК = 08:00 UTC (Apple)
+    # 14:00 МСК = 11:00 UTC (Windows)
+    # 17:00 МСК = 14:00 UTC (Android)
+    # 19:00 МСК = 16:00 UTC (Apple)
+    
+    now_utc = datetime.now(timezone.utc)
+    hour = now_utc.hour
+    
+    if hour == 5:
+        category, limit = "android", 1
+    elif hour == 8:
+        category, limit = "apple", 1
+    elif hour == 11:
+        category, limit = "windows", 1
+    elif hour == 14:
+        category, limit = "android", 1
+    elif hour == 16:
+        category, limit = "apple", 1
+    else:
+        print(f"Запуск в {hour} UTC не соответствует расписанию постинга. Ждем следующего.")
+        return
 
     print(f"=== Пост для категории: {category.upper()} ===")
     items = fetch_rss()
