@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import random
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -12,6 +13,21 @@ KEYWORDS = {
     "apple": ["苹果", "iPhone", "iPad", "Mac", "Apple", "iOS", "macOS", "AirPods"],
     "windows": ["Windows", "微软", "Microsoft", "Win11", "Win10", "Surface"],
 }
+
+# --- ШАБЛОНЫ ДЛЯ РАЗНООБРАЗИЯ ---
+GREETINGS = ["", "Привет! 👋\n", "Всем привет! 🚀\n", "Свежие новости! 📰\n", "Утренний дайджест! ☕\n"]
+CLOSINGS = [
+    "А что вы думаете по этому поводу? 👇",
+    "Делитесь мнением в комментариях 💬",
+    "Сохраняйте, чтобы не потерять 🔖",
+    "Как вам такие новости? 🤔",
+    "Ставьте реакцию, если было интересно 🔥",
+]
+EMOJI_SETS = [
+    {"android": "🤖", "apple": "🍏", "windows": "🪟"},
+    {"android": "📱", "apple": "📱", "windows": "💻"},
+    {"android": "🔥", "apple": "✨", "windows": "⚙️"},
+]
 
 def translate_text(text):
     if not text:
@@ -64,7 +80,6 @@ def filter_news(items, category, limit=1):
     return matched
 
 def send_to_telegram(category, it, title_ru, desc_ru):
-    # ВСТАВЬ СЮДА СВОЙ ТОКЕН И ID (если еще не вставил)
     token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
     chat_id = ("8064044934") 
     
@@ -72,18 +87,29 @@ def send_to_telegram(category, it, title_ru, desc_ru):
         print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
         return
 
-    # Убираем упоминания источника из текста
+    # Убираем упоминания источника
     desc_ru = desc_ru.replace("IT之家", "").replace("IT 之家", "").replace("ithome", "").replace("IT Home", "").strip()
     title_ru = title_ru.replace("IT之家", "").replace("IT 之家", "").replace("ithome", "").replace("IT Home", "").strip()
 
-    emoji_map = {"android": "🤖", "apple": "🍎", "windows": "🪟"}
-    cat_emoji = emoji_map.get(category, "📱")
+    # Выбираем случайные элементы оформления
+    greeting = random.choice(GREETINGS)
+    closing = random.choice(CLOSINGS)
+    emoji_set = random.choice(EMOJI_SETS)
+    cat_emoji = emoji_set.get(category, "📰")
 
-    text = (
-        f"{cat_emoji} **{category.upper()}**\n\n"
-        f"🔥 **{title_ru}**\n\n"
-        f"📝 {desc_ru}..."
-    )
+    # Собираем текст в случайном стиле
+    styles = [
+        # Стиль 1: Классический
+        f"{greeting}{cat_emoji} **{category.upper()}**\n\n🔥 **{title_ru}**\n\n📝 {desc_ru}...\n\n{closing}",
+        # Стиль 2: Без слова "новости", с акцентом на заголовок
+        f"{greeting}{cat_emoji} **{title_ru}**\n\n{desc_ru}\n\n{closing}",
+        # Стиль 3: Дайджест
+        f"{greeting}Новости **{category.upper()}** за сегодня:\n\n👉 {title_ru}\n\n{desc_ru}\n\n{closing}",
+        # Стиль 4: Минимализм
+        f"{cat_emoji} **{title_ru}**\n\n{desc_ru}\n\n{closing}"
+    ]
+    
+    text = random.choice(styles)
     
     if it['image'] and "http" in it['image']:
         url = f"https://api.telegram.org/bot{token}/sendPhoto"
@@ -98,7 +124,8 @@ def send_to_telegram(category, it, title_ru, desc_ru):
         payload = {
             "chat_id": chat_id,
             "text": text,
-            "parse_mode": "Markdown"
+            "parse_mode": "Markdown",
+            "disable_web_page_preview": True # Чтобы не было огромных превью ссылок
         }
         
     response = requests.post(url, json=payload)
