@@ -80,11 +80,12 @@ def filter_news(items, category, limit=1):
     return matched
 
 def send_to_telegram(category, it, title_ru, desc_ru):
-    token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg") 
-    chat_id = ("8064044934") 
+    # Берем токены из переменных окружения (GitHub Secrets)
+    token = ("9049387111:AAER4XOSUxJin8jaOG1B8h4zUzhIH-81xGg")
+    chat_id = ("8064044934")
     
     if not token or not chat_id:
-        print("Ошибка: не заданы TELEGRAM_TOKEN или TELEGRAM_CHAT_ID")
+        print("Ошибка: не заданы TG_TOKEN или TG_CHAT_ID")
         return
 
     # Убираем упоминания источника
@@ -111,6 +112,10 @@ def send_to_telegram(category, it, title_ru, desc_ru):
     
     text = random.choice(styles)
     
+    # ⚠️ ЗАЩИТА ОТ ОШИБКИ 400: Обрезаем текст, если он длиннее 1000 символов
+    if len(text) > 1000:
+        text = text[:1000] + "..."
+
     if it['image'] and "http" in it['image']:
         url = f"https://api.telegram.org/bot{token}/sendPhoto"
         payload = {
@@ -125,7 +130,7 @@ def send_to_telegram(category, it, title_ru, desc_ru):
             "chat_id": chat_id,
             "text": text,
             "parse_mode": "Markdown",
-            "disable_web_page_preview": True # Чтобы не было огромных превью ссылок
+            "disable_web_page_preview": True
         }
         
     response = requests.post(url, json=payload)
