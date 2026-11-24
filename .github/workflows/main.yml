@@ -2,11 +2,11 @@ name: IT之家 Daily Posts
 
 on:
   schedule:
-    - cron: '0 5 * * *'
-    - cron: '0 8 * * *'
-    - cron: '0 11 * * *'
-    - cron: '0 14 * * *'
-    - cron: '0 16 * * *'
+    - cron: '0 5 * * *'   # 08:00 МСК
+    - cron: '0 8 * * *'   # 11:00 МСК
+    - cron: '0 11 * * *'  # 14:00 МСК
+    - cron: '0 14 * * *'  # 17:00 МСК
+    - cron: '0 16 * * *'  # 19:00 МСК
   workflow_dispatch: {}
 
 jobs:
@@ -25,6 +25,16 @@ jobs:
         
       - name: Run script
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Эти названия должны совпадать с тем, что написано в Python-коде (os.getenv)
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: python scripts/fetch_news.py
+
+      # ⚠️ ВАЖНО: Сохраняем файл с отправленными новостями, чтобы не было повторов
+      - name: Commit sent.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sent.json || true
+          git diff --cached --quiet || git commit -m "chore: update sent.json [skip ci]"
+          git push || true
