@@ -100,22 +100,19 @@ def send_to_telegram(category, it, title_ru, desc_ru):
 
     # Собираем текст в случайном стиле
     styles = [
-        # Стиль 1: Классический
         f"{greeting}{cat_emoji} **{category.upper()}**\n\n🔥 **{title_ru}**\n\n📝 {desc_ru}...\n\n{closing}",
-        # Стиль 2: Без слова "новости", с акцентом на заголовок
         f"{greeting}{cat_emoji} **{title_ru}**\n\n{desc_ru}\n\n{closing}",
-        # Стиль 3: Дайджест
         f"{greeting}Новости **{category.upper()}** за сегодня:\n\n👉 {title_ru}\n\n{desc_ru}\n\n{closing}",
-        # Стиль 4: Минимализм
         f"{cat_emoji} **{title_ru}**\n\n{desc_ru}\n\n{closing}"
     ]
     
     text = random.choice(styles)
     
-    # ⚠️ ЗАЩИТА ОТ ОШИБКИ 400: Обрезаем текст, если он длиннее 1000 символов
+    # Защита от ошибки 400 (слишком длинный текст)
     if len(text) > 1000:
         text = text[:1000] + "..."
 
+    # Проверяем, есть ли ссылка на картинку
     if it['image'] and "http" in it['image']:
         url = f"https://api.telegram.org/bot{token}/sendPhoto"
         payload = {
@@ -124,7 +121,21 @@ def send_to_telegram(category, it, title_ru, desc_ru):
             "caption": text,
             "parse_mode": "Markdown"
         }
+        response = requests.post(url, json=payload)
+        
+        # Если фото не отправилось (битая ссылка), отправляем текстом
+        if response.status_code != 200:
+            print(f"Фото не загрузилось ({response.json().get('description')}). Отправляем текстом.")
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            payload = {
+                "chat_id": chat_id,
+                "text": text,
+                "parse_mode": "Markdown",
+                "disable_web_page_preview": True
+            }
+            response = requests.post(url, json=payload)
     else:
+        # Если картинки изначально нет
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         payload = {
             "chat_id": chat_id,
@@ -132,8 +143,8 @@ def send_to_telegram(category, it, title_ru, desc_ru):
             "parse_mode": "Markdown",
             "disable_web_page_preview": True
         }
+        response = requests.post(url, json=payload)
         
-    response = requests.post(url, json=payload)
     if response.status_code == 200:
         print("Пост успешно отправлен в Telegram!")
     else:
